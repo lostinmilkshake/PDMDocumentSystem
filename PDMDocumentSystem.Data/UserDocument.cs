@@ -9,4 +9,6 @@ public class UserDocument
     
     public Guid DocumentId { get; set; }
     public Document Document { get; set; }
+    
+    public bool Subscribed { get; set; }
 }

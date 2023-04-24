@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PDMDocumentSystem.Services;
 
 namespace PDMDocumentSystem.Controllers;
 
@@ -6,41 +7,41 @@ namespace PDMDocumentSystem.Controllers;
 [Route("[controller]")]
 public class DocumentController : ControllerBase
 {
-    private readonly IGenericRepository<Document> _documentRepository;
+    private readonly IDocumentService _documentService;
 
-    public DocumentController(IGenericRepository<Document> documentRepository)
+    public DocumentController(IDocumentService documentService)
     {
-        _documentRepository = documentRepository;
+        _documentService = documentService;
     }
     
     [HttpGet]
     public async Task<IEnumerable<Document?>> GetAllDocuments()
     {
-        return await _documentRepository.GetAllAsync();
+        return await _documentService.GetAllDocumentsAsync();
     }
     
     [HttpGet("{id}")]
     public async Task<Document?> GetDocumentById(Guid id)
     {
-        return await _documentRepository.GetByIdAsync(id);
+        return await _documentService.GetDocumentByIdAsync(id);
     }
     
     [HttpPost]
     public async Task CreateDocument(Document document)
     {
-        await _documentRepository.CreateAsync(document);
+        await _documentService.CreateDocumentAsync(document);
     }
     
     [HttpPut]
     public async Task UpdateDocument(Document document)
     {
-        await _documentRepository.UpdateAsync(document);
+        await _documentService.UpdateDocumentAsync(document);
     }
     
     [HttpDelete("{id}")]
     public async Task DeleteDocument(Guid id)
     {
-        var document = await _documentRepository.GetByIdAsync(id);
-        await _documentRepository.DeleteAsync(document);
+        var document = await _documentService.GetDocumentByIdAsync(id);
+        await _documentService.DeleteDocumentAsync(document);
     }
 }
