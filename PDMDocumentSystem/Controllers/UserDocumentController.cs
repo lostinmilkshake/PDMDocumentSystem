@@ -22,10 +22,16 @@ public class UserDocumentController : ControllerBase
         return await _userDocumentService.GetAllUserDocumentsAsync();
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public async Task<UserDocument> GetUserDocumentById(Guid id)
     {
         return await _userDocumentService.GetUserDocumentByIdAsync(id);
+    }
+    
+    [HttpGet("{userId:guid}/{documentId:guid}")]
+    public async Task<UserDocument?> GetUserDocumentById(Guid userId, Guid documentId)
+    {
+        return await _userDocumentService.GetUserDocumentByUserIdAndDocumentIdAsync(userId, documentId);
     }
 
     [HttpPost]
@@ -40,7 +46,7 @@ public class UserDocumentController : ControllerBase
         await _userDocumentService.UpdateUserDocumentAsync(userDocument);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task DeleteUserDocument(Guid id)
     {
         var userDocument = await _userDocumentService.GetUserDocumentByIdAsync(id);

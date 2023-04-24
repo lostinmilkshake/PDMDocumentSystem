@@ -11,6 +11,7 @@ namespace PDMDocumentSystem.Controllers;
 public class DocumentController : ControllerBase
 {
     private const string BLOB_CONTAINER = "BlobContainer";
+    private const string SERVICE_BUS = "ServiceBus";
     private readonly IDocumentService _documentService;
     private readonly IConfiguration _configuration;
 
@@ -61,7 +62,7 @@ public class DocumentController : ControllerBase
     {
         await _documentService.UpdateUploadedDocumentAsync(postRequest, 
             _configuration.GetConnectionString(BLOB_CONTAINER), 
-            _configuration.GetValue<string>(BLOB_CONTAINER));
+            _configuration.GetValue<string>(BLOB_CONTAINER), _configuration.GetConnectionString(SERVICE_BUS), _configuration.GetValue<string>(SERVICE_BUS));
         return Ok();
     }
     

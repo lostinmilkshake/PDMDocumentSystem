@@ -1,4 +1,8 @@
-﻿using Azure.Storage.Blobs;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Azure.Messaging.ServiceBus;
+using Azure.Storage.Blobs;
 using PDMDocumentSystem.Data.Models;
 using PDMDocumentSystem.Services.Interfaces;
 using PDMDocumentSystem.Services.Models;
@@ -8,10 +12,16 @@ namespace PDMDocumentSystem.Services;
 public class DocumentService : IDocumentService
 {
     private readonly IGenericRepository<Document> _documentRepository;
-    
-    public DocumentService(IGenericRepository<Document> documentRepository)
+    private readonly IGenericRepository<UserDocument> _userDocumentRepository;
+    private readonly IGenericRepository<User> _userRepository;
+
+    public DocumentService(IGenericRepository<Document> documentRepository,
+        IGenericRepository<UserDocument> userDocumentRepository,
+        IGenericRepository<User> userRepository)
     {
         _documentRepository = documentRepository;
+        _userDocumentRepository = userDocumentRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<IEnumerable<Document>> GetAllDocumentsAsync()
@@ -43,7 +53,8 @@ public class DocumentService : IDocumentService
         return memoryStream.ToArray();
     }
 
-    public async Task UpdateUploadedDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString, string containerName)
+    public async Task UpdateUploadedDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString,
+        string containerName, string? serviceBusConnectionString, string? serviceBusQueue)
     {
         await _documentRepository.UpdateAsync(documentModel.Document);
         
@@ -52,8 +63,30 @@ public class DocumentService : IDocumentService
         var blobClient = blobContainerClient.GetBlobClient(documentModel.Document.PathToFile + documentModel.Document.Title);
         using var memoryStream = new MemoryStream();
         await documentModel.File.CopyToAsync(memoryStream);
+        memoryStream.Position = 0;
 
         await blobClient.UploadAsync(memoryStream, overwrite: true);
+
+        await SendNotificationToServiceBus(documentModel, serviceBusConnectionString, serviceBusQueue);
+    }
+
+    private async Task SendNotificationToServiceBus(NewDocumentModel documentModel, string? serviceBusConnectionString,
+        string? serviceBusQueue)
+    {
+        var serviceBusClient = new ServiceBusClient(serviceBusConnectionString);
+        var sender = serviceBusClient.CreateSender(serviceBusQueue);
+
+        var subscribedUsersId =
+            await _userDocumentRepository.GetByConditionAsync(ud =>
+                ud!.DocumentId == documentModel.Document.Id && ud.Subscribed);
+        var subscribedUsersEmails = new NotifySubscribedUserModel
+        {
+            SubscribedUsersEmails = (await _userRepository.GetByConditionAsync(u => subscribedUsersId.Contains<>(u.Id)))
+                .Select(u => u?.Email),
+            Document = documentModel.Document
+        };
+
+        await sender.SendMessageAsync(new ServiceBusMessage(JsonSerializer.Serialize(subscribedUsersEmails)));
     }
 
     public async Task UploadDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString, string containerName)

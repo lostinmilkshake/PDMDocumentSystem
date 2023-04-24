@@ -21,6 +21,11 @@ public class UserDocumentService : IUserDocumentService
     {
         return await _userDocumentRepository.GetAllAsync();
     }
+    
+    public async Task<UserDocument?> GetUserDocumentByUserIdAndDocumentIdAsync(Guid userId, Guid documentId)
+    {
+        return (await _userDocumentRepository.GetByConditionAsync(x => x.UserId == userId && x.DocumentId == documentId)).FirstOrDefault();
+    }
 
     public async Task<UserDocument> GetUserDocumentByIdAsync(Guid id)
     {

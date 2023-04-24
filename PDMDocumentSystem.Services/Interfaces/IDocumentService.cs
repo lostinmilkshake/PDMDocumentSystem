@@ -12,5 +12,6 @@ public interface IDocumentService
     Task DeleteDocumentAsync(Document document);
     Task<byte[]> DownloadDocumentAsync(Guid id, string blobContainerConnectionString, string containerName);
     Task UploadDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString, string containerName);
-    Task UpdateUploadedDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString, string containerName);
+    Task UpdateUploadedDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString,
+        string containerName, string? serviceBusConnectionString, string? serviceBusQueue);
 }
