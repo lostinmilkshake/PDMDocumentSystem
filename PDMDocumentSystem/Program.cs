@@ -1,9 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using PDMDocumentSystem;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
+using PDMDocumentSystem.Services;
+using PDMDocumentSystem.Services.Interfaces;
+using PDMDocumentSystem.Data.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(options =>
+    {
+        builder.Configuration.Bind("AzureAd", options);
+        options.TokenValidationParameters.NameClaimType = "name";
+    }, options => { builder.Configuration.Bind("AzureAd", options); });
+
+builder.Services.AddAuthorization(config =>
+{
+    
+});
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -22,6 +38,8 @@ builder.Services.AddDbContextFactory<PDMDocumentContext>((sp, options) =>
 builder.Services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 builder.Services.AddScoped<IGenericRepository<Document>, GenericRepository<Document>>();
 builder.Services.AddScoped<IGenericRepository<UserDocument>, GenericRepository<UserDocument>>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDocumentService, DocumentService>();
 
 var app = builder.Build();
 
@@ -34,6 +52,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

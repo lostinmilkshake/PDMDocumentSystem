@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PDMDocumentSystem.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using PDMDocumentSystem.Data.Models;
+using PDMDocumentSystem.Services.Interfaces;
 
 namespace PDMDocumentSystem.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -13,7 +15,8 @@ public class UserController : ControllerBase
     {
         _userService = userService;
     }
-
+    
+    [Authorize]
     [HttpGet]
     public async Task<IEnumerable<User>> Get()
     {

@@ -1,4 +1,7 @@
-﻿namespace PDMDocumentSystem.Services;
+﻿using PDMDocumentSystem.Data.Models;
+using PDMDocumentSystem.Services.Interfaces;
+
+namespace PDMDocumentSystem.Services;
 
 public class UserService : IUserService
 {
