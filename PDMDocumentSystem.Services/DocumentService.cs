@@ -81,7 +81,7 @@ public class DocumentService : IDocumentService
                 ud!.DocumentId == documentModel.Document.Id && ud.Subscribed);
         var subscribedUsersEmails = new NotifySubscribedUserModel
         {
-            SubscribedUsersEmails = (await _userRepository.GetByConditionAsync(u => subscribedUsersId.Contains<>(u.Id)))
+            SubscribedUsersEmails = (await _userRepository.GetByConditionAsync(u => subscribedUsersId.Select(ud => ud.UserId).Contains(u.Id)))
                 .Select(u => u?.Email),
             Document = documentModel.Document
         };
