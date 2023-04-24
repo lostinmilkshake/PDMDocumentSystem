@@ -43,6 +43,18 @@ public class DocumentService : IDocumentService
         return memoryStream.ToArray();
     }
 
+    public async Task UpdateUploadedDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString, string containerName)
+    {
+        await _documentRepository.UpdateAsync(documentModel.Document);
+        
+        var blobContainerClient = new BlobContainerClient(blobContainerConnectionString, containerName);
+
+        var blobClient = blobContainerClient.GetBlobClient(documentModel.Document.PathToFile + documentModel.Document.Title);
+        using var memoryStream = new MemoryStream();
+        await documentModel.File.CopyToAsync(memoryStream);
+
+        await blobClient.UploadAsync(memoryStream, overwrite: true);
+    }
 
     public async Task UploadDocumentAsync(NewDocumentModel documentModel, string blobContainerConnectionString, string containerName)
     {
@@ -52,13 +64,13 @@ public class DocumentService : IDocumentService
         // Upload file from documentModel to Azure Blob Storage
         var blobContainerClient = new BlobContainerClient(blobContainerConnectionString, containerName);
 
-        var blobClient = blobContainerClient.GetBlobClient(documentModel.Document.PathToFile + documentModel.File.FileName);
+        var blobClient = blobContainerClient.GetBlobClient(documentModel.Document.PathToFile + documentModel.Document.Title);
 
         using var memoryStream = new MemoryStream();
         await documentModel.File.CopyToAsync(memoryStream);
         memoryStream.Position = 0;
 
-        await blobClient.UploadAsync(memoryStream);
+        await blobClient.UploadAsync(memoryStream, overwrite: true);
     }
     
     public async Task UpdateDocumentAsync(Document document)

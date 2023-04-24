@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PDMDocumentSystem.Data.Models;
+using PDMDocumentSystem.Services;
 using PDMDocumentSystem.Services.Interfaces;
 
 namespace PDMDocumentSystem.Controllers;
@@ -10,12 +11,26 @@ namespace PDMDocumentSystem.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IAuthService _authService;
 
-    public UserController(IUserService userService)
+    public UserController(IUserService userService, IAuthService authService)
     {
         _userService = userService;
+        _authService = authService;
     }
-    
+
+    [Authorize]
+    [HttpGet("authorize")]
+    public async Task<ActionResult<User>> Authorize()
+    {
+        var user = this.User;
+        var userEmail = user.Identities.FirstOrDefault().Claims.FirstOrDefault(c => c.Type == "preferred_username")
+            .Value;
+        var newUser = await _authService.AuthenticateAsync(userEmail);
+        
+        return Ok(newUser);
+    } 
+
     [Authorize]
     [HttpGet]
     public async Task<IEnumerable<User>> Get()

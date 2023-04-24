@@ -21,7 +21,7 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 
     public async Task<IEnumerable<TEntity?>> GetByConditionAsync(Expression<Func<TEntity?, bool>> predicate)
     {
-        return await _dbSet.Where(predicate).ToListAsync();
+        return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
     }
 
     public async Task<TEntity?> GetByIdAsync(Guid id)

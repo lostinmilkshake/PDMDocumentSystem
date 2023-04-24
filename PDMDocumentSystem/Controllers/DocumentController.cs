@@ -54,7 +54,16 @@ public class DocumentController : ControllerBase
             _configuration.GetConnectionString(BLOB_CONTAINER), 
             _configuration.GetValue<string>(BLOB_CONTAINER));
         return Ok();
-    }       
+    }
+    
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateDocument([FromForm] NewDocumentModel postRequest)
+    {
+        await _documentService.UpdateUploadedDocumentAsync(postRequest, 
+            _configuration.GetConnectionString(BLOB_CONTAINER), 
+            _configuration.GetValue<string>(BLOB_CONTAINER));
+        return Ok();
+    }
     
     [HttpPut]
     public async Task UpdateDocument(Document document)
